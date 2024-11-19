@@ -1,4 +1,3 @@
-
 # **OpenAPIServe**
 
 OpenAPIServe is a reusable Swift library for serving OpenAPI specifications and interactive API documentation in Vapor projects. This library enforces a standardized location for your OpenAPI spec file and provides middleware to serve it dynamically.
@@ -10,6 +9,7 @@ OpenAPIServe is a reusable Swift library for serving OpenAPI specifications and 
 - Serves OpenAPI specification files (`openapi.yml` or `openapi.json`) at customizable routes.
 - Enforces a standard location for the OpenAPI specification in your Vapor project.
 - Lightweight middleware integration for Vapor applications.
+- Supports ReDoc for interactive API documentation.
 
 ---
 
@@ -61,18 +61,26 @@ If the file is missing, the middleware will throw a runtime error with instructi
 
 ---
 
-### **Step 2: Add Middleware**
+### **Step 2: Add Middleware and ReDoc Integration**
 
-Import and use the `OpenAPIMiddleware` in your Vapor project:
+Import and use the `OpenAPIMiddleware` and `RedocHandler` in your Vapor project:
 
 ```swift
 import Vapor
-import OpenAPIMiddleware
+import OpenAPIServe
 
 public func configure(_ app: Application) throws {
+    // Add the OpenAPI Middleware to serve the specification
     app.middleware.use(OpenAPIMiddleware(filePath: "../Resources/OpenAPI/openapi.yml"))
+    
+    // Register the ReDoc route to serve interactive documentation
+    RedocHandler.registerRoutes(on: app, docsPath: "/docs", specPath: "/openapi.yml")
 }
 ```
+
+By default:
+- The OpenAPI specification is served at `/openapi.yml`.
+- The ReDoc documentation is served at `/docs`.
 
 ---
 
@@ -91,7 +99,13 @@ Example with `curl`:
 curl http://localhost:8080/openapi.yml
 ```
 
-If the file is properly configured, it will return the content of `openapi.yml`. If not, an error will indicate the missing file.
+### **2. ReDoc Documentation**
+Access the interactive ReDoc documentation at:
+```
+http://localhost:8080/docs
+```
+
+You should see a fully interactive API documentation page powered by ReDoc, dynamically rendering your OpenAPI specification.
 
 ---
 
@@ -99,7 +113,7 @@ If the file is properly configured, it will return the content of `openapi.yml`.
 
 - [x] Middleware for serving OpenAPI specs.
 - [x] Runtime validation for `openapi.yml` location.
-- [ ] Integration with ReDoc for interactive documentation.
+- [x] Integration with ReDoc for interactive documentation.
 - [ ] Unit tests for middleware and handlers.
 - [ ] Support for Swagger UI as an alternative to ReDoc.
 
@@ -123,4 +137,6 @@ Developed and maintained by [Contexter](https://github.com/Contexter).
 
 ---
 
+### **Next Steps**
 
+Confirm if this updated `README.md` is ready to be pasted into the repository, or let me know if additional changes are needed!
