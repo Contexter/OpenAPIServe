@@ -1,6 +1,3 @@
-Here’s the `README.md` content optimized for a Markdown editor, including proper titles, headers, and formatting for seamless viewing:
-
----
 
 # **OpenAPIServe**
 
