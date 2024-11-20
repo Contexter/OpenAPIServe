@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.5
 import PackageDescription
 
 let package = Package(
@@ -6,34 +6,24 @@ let package = Package(
     platforms: [
         .macOS(.v12)
     ],
-    products: [
-        .library(
-            name: "OpenAPIServe",
-            targets: ["OpenAPIServe"]
-        )
-    ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0"),
+        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0")
     ],
     targets: [
         .target(
             name: "OpenAPIServe",
-            dependencies: [
-                .product(name: "Vapor", package: "vapor"),
-                .product(name: "Leaf", package: "leaf"),
-            ],
+            dependencies: [.product(name: "Vapor", package: "vapor"),
+                           .product(name: "Leaf", package: "leaf")],
             resources: [
-                .copy("Resources/Views/redoc.leaf"),
-                .copy("Resources/OpenAPI/openapi.yml")
+                .copy("Resources/OpenAPI/openapi.yml"),
+                .copy("Resources/Views/redoc.leaf")
             ]
         ),
         .testTarget(
             name: "OpenAPIServeTests",
-            dependencies: [
-                .target(name: "OpenAPIServe"),
-                .product(name: "XCTVapor", package: "vapor"),
-            ]
+            dependencies: ["OpenAPIServe"],
+            resources: []
         )
     ]
 )
