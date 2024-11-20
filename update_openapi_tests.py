@@ -1,4 +1,10 @@
+import os
 
+# Define the path to the test file
+test_file_path = "Tests/OpenAPIServeTests/OpenAPIServeTests.swift"
+
+# Define the corrected content for the test file
+corrected_test_content = """
 import XCTVapor
 import Leaf
 @testable import OpenAPIServe
@@ -21,7 +27,7 @@ final class OpenAPIServeTests: XCTestCase {
 
         // Write mock ReDoc Leaf template
         let redocLeafPath = viewsPath + "/redoc.leaf"
-        let redocTemplate = """
+        let redocTemplate = \"\"\"
 <!DOCTYPE html>
 <html>
 <head>
@@ -31,12 +37,12 @@ final class OpenAPIServeTests: XCTestCase {
     <redoc spec-url="{{ specUrl }}"></redoc>
 </body>
 </html>
-"""
+\"\"\"
         try? redocTemplate.write(toFile: redocLeafPath, atomically: true, encoding: .utf8)
 
         // Log all registered routes
         app.routes.all.forEach { route in
-            print("Registered route: \(route.description)")
+            print("Registered route: \\(route.description)")
         }
     }
 
@@ -53,13 +59,13 @@ final class OpenAPIServeTests: XCTestCase {
 
     func testOpenAPIMiddlewareServesSpecFile() throws {
         let mockFilePath = app.directory.resourcesDirectory + "OpenAPI/openapi.yml"
-        let openAPISpec = """
+        let openAPISpec = \"\"\"
 openapi: 3.1.0
 info:
   title: Test API
   version: 1.0.0
 paths: {}
-"""
+\"\"\"
         try openAPISpec.write(toFile: mockFilePath, atomically: true, encoding: .utf8)
 
         app.middleware.use(OpenAPIMiddleware(filePath: "Resources/OpenAPI/openapi.yml"))
@@ -77,3 +83,19 @@ paths: {}
         XCTAssertTrue(response.body.string.contains("<redoc spec-url='/openapi.yml'>"))
     }
 }
+"""
+
+# Function to update the test file
+def update_test_file():
+    if not os.path.exists(test_file_path):
+        print(f"Error: Test file not found at {test_file_path}")
+        return
+
+    with open(test_file_path, "w") as file:
+        file.write(corrected_test_content)
+
+    print(f"Updated {test_file_path} with corrected test content.")
+
+# Execute the update function
+if __name__ == "__main__":
+    update_test_file()

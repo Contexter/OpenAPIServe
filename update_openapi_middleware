@@ -1,4 +1,7 @@
-import Vapor
+def update_openapi_middleware():
+    """Fix the OpenAPIMiddleware.swift file."""
+    middleware_path = "Sources/OpenAPIServe/OpenAPIMiddleware.swift"
+    middleware_content = '''import Vapor
 
 public struct OpenAPIMiddleware: Middleware {
     private let filePath: String
@@ -26,3 +29,8 @@ public struct OpenAPIMiddleware: Middleware {
         }
     }
 }
+'''
+    with open(middleware_path, "w") as file:
+        file.write(middleware_content)
+    print(f"Updated {middleware_path}.")
+
