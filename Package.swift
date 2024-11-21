@@ -7,30 +7,49 @@ let package = Package(
         .macOS(.v12)
     ],
     products: [
-        .library(name: "OpenAPIServe", targets: ["OpenAPIServe"])
+        .library(
+            name: "OpenAPIServe",
+            targets: ["OpenAPIServe"]
+        )
     ],
     dependencies: [
-        // Correct location for `.package`
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0")
+        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0"),
+        .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0")
     ],
     targets: [
+        // Main OpenAPIServe target
         .target(
             name: "OpenAPIServe",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
-                .product(name: "Leaf", package: "leaf")
+                .product(name: "Leaf", package: "leaf"),
+                .product(name: "Algorithms", package: "swift-algorithms")
             ],
+            path: "Sources/OpenAPIServe",
             resources: [
-                .copy("Resources/Views/redoc.leaf"),
-                .copy("Resources/OpenAPI/openapi.yml")
+                .process("Resources")
             ]
         ),
+        
+        // Utilities for testing
+        .target(
+            name: "Utilities",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+                "OpenAPIServe"
+            ],
+            path: "Tests/OpenAPIServeTests/Utilities"
+        ),
+
+        // Test target
         .testTarget(
             name: "OpenAPIServeTests",
-            dependencies: [
-                "OpenAPIServe",
-                .product(name: "XCTVapor", package: "vapor")
+            dependencies: ["OpenAPIServe", "Utilities"],
+            path: "Tests/OpenAPIServeTests",
+            exclude: ["Utilities"],
+            resources: [
+                .process("Resources/Views")
             ]
         )
     ]
