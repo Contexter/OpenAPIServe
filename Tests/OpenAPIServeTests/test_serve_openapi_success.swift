@@ -1,18 +1,12 @@
-
-import XCTest
 import XCTVapor
-import OpenAPIServe
+@testable import OpenAPIServe
 
-/// Mock data provider for testing.
+// MockDataProvider conforming to DataProvider protocol
 struct MockDataProvider: DataProvider {
+    let mockContent: String
+    
     func getData() -> String {
-        return """
-openapi: 3.0.0
-info:
-  title: Mock API
-  version: 1.0.0
-paths: {}
-        """
+        return mockContent
     }
 }
 
@@ -21,10 +15,9 @@ final class ServeOpenAPITests: XCTestCase {
         let app = Application(.testing)
         defer { app.shutdown() }
 
-        // Use mock data provider
-        app.middleware.use(OpenAPIMiddleware(dataProvider: MockDataProvider()))
+        let dataProvider = MockDataProvider(mockContent: "openapi: 3.0.0")
+        app.middleware.use(OpenAPIMiddleware(dataProvider: dataProvider))
 
-        // Test response
         try app.test(.GET, "/openapi.yml", afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
             XCTAssertEqual(res.headers.contentType, HTTPMediaType(type: "application", subType: "x-yaml"))

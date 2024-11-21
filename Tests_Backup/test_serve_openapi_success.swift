@@ -1,16 +1,25 @@
-
 import XCTVapor
 @testable import OpenAPIServe
 
-final class ServeOpenAPISuccessTests: XCTestCase {
-    func testServeOpenAPISpec() throws {
+// MockDataProvider conforming to DataProvider protocol
+struct MockDataProvider: DataProvider {
+    let mockContent: String
+    func fetchData() -> EventLoopFuture<String> {
+        return EmbeddedEventLoop().makeSucceededFuture(mockContent)
+    }
+}
+
+final class ServeOpenAPITests: XCTestCase {
+    func testServeOpenAPISuccess() throws {
         let app = Application(.testing)
         defer { app.shutdown() }
-        try configure(app)
+
+        let dataProvider = MockDataProvider(mockContent: "openapi: 3.0.0")
+        app.middleware.use(OpenAPIMiddleware(dataProvider: dataProvider))
 
         try app.test(.GET, "/openapi.yml", afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
-            XCTAssertEqual(res.headers.contentType, .init("application/x-yaml"))
+            XCTAssertEqual(res.headers.contentType, HTTPMediaType(type: "application", subType: "x-yaml"))
             XCTAssertTrue(res.body.string.contains("openapi: 3.0.0"))
         })
     }
