@@ -1,120 +1,56 @@
 import os
 import shutil
-import subprocess
 
-# Define the project directories
-PROJECT_ROOT = os.path.abspath(".")
-SOURCES_DIR = os.path.join(PROJECT_ROOT, "Sources", "OpenAPIServe")
-RESOURCES_DIR = os.path.join(SOURCES_DIR, "Resources")
+ROOT_DIR = os.path.abspath(".")
+RESOURCES_DIR = os.path.join(ROOT_DIR, "Sources/OpenAPIServe/Resources")
 VIEWS_DIR = os.path.join(RESOURCES_DIR, "Views")
-TESTS_DIR = os.path.join(PROJECT_ROOT, "Tests", "OpenAPIServeTests")
-UTILITIES_DIR = os.path.join(TESTS_DIR, "Utilities")
+BACKUP_DIR = os.path.join(ROOT_DIR, "Tests_Backup")
+UTILITIES_DIR = os.path.join(ROOT_DIR, "Tests/OpenAPIServeTests/Utilities")
 
-# Function to create directories if they don't exist
-def create_dir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
+def ensure_directories():
+    """Ensure required directories exist."""
+    if not os.path.exists(RESOURCES_DIR):
+        os.makedirs(RESOURCES_DIR)
+    if not os.path.exists(VIEWS_DIR):
+        os.makedirs(VIEWS_DIR)
 
-# Function to move resources to the correct location
 def move_resources():
-    old_resources = os.path.join(PROJECT_ROOT, "Resources")
-    if os.path.exists(old_resources):
-        print(f"Moving resources from {old_resources} to {RESOURCES_DIR}")
-        shutil.move(old_resources, RESOURCES_DIR)
-    else:
-        print("No resources found to move.")
-
-# Function to fix Package.swift
-def update_package_swift():
-    package_swift_path = os.path.join(PROJECT_ROOT, "Package.swift")
-    updated_package_content = f"""
-// swift-tools-version:5.6
-import PackageDescription
-
-let package = Package(
-    name: "OpenAPIServe",
-    platforms: [
-        .macOS(.v12)
-    ],
-    products: [
-        .library(
-            name: "OpenAPIServe",
-            targets: ["OpenAPIServe"]
-        )
-    ],
-    dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0")
-    ],
-    targets: [
-        .target(
-            name: "OpenAPIServe",
-            dependencies: [
-                .product(name: "Vapor", package: "vapor"),
-                .product(name: "Leaf", package: "leaf")
-            ],
-            resources: [
-                .process("Resources")
-            ]
-        ),
-        .target(
-            name: "Utilities",
-            dependencies: [],
-            path: "Tests/OpenAPIServeTests/Utilities",
-            exclude: []
-        ),
-        .testTarget(
-            name: "OpenAPIServeTests",
-            dependencies: ["OpenAPIServe", "Utilities"],
-            path: "Tests/OpenAPIServeTests",
-            exclude: ["Utilities"],
-            resources: [
-                .process("Resources/Views")
-            ]
-        )
+    """Move resource files to their correct locations."""
+    resource_files = [
+        "Sources/OpenAPIServe/Resources/Views/redoc.leaf"
     ]
-)
-"""
-    with open(package_swift_path, "w") as f:
-        f.write(updated_package_content)
-    print("Updated Package.swift")
+    for file in resource_files:
+        src = os.path.join(ROOT_DIR, file)
+        dest = os.path.join(VIEWS_DIR, os.path.basename(file))
+        if os.path.exists(src) and src != dest:
+            shutil.move(src, dest)
+            print(f"Moved {src} to {dest}")
 
-# Function to ensure utilities are properly set up
-def setup_utilities():
-    create_dir(UTILITIES_DIR)
-    utilities_files = ["MockDataProvider.swift", "TestAppConfigurator.swift", "TestAssertions.swift"]
-    for utility in utilities_files:
-        source_path = os.path.join(TESTS_DIR, utility)
-        dest_path = os.path.join(UTILITIES_DIR, utility)
-        if os.path.exists(source_path):
-            print(f"Moving {utility} to {UTILITIES_DIR}")
-            shutil.move(source_path, dest_path)
-        elif os.path.exists(dest_path):
-            print(f"{utility} is already in the correct location.")
+def clean_backups():
+    """Remove backup files that conflict with the build."""
+    if os.path.exists(BACKUP_DIR):
+        shutil.rmtree(BACKUP_DIR)
+        print(f"Removed backup directory: {BACKUP_DIR}")
 
-# Function to clean the build environment
-def clean_build():
-    print("Cleaning build environment...")
-    subprocess.run(["swift", "package", "clean"], check=True)
-    subprocess.run(["swift", "package", "reset"], check=True)
+def verify_test_utilities():
+    """Verify utility files are properly located."""
+    expected_utilities = [
+        "MockDataProvider.swift",
+        "TestAppConfigurator.swift",
+        "TestAssertions.swift"
+    ]
+    for utility in expected_utilities:
+        utility_path = os.path.join(UTILITIES_DIR, utility)
+        if not os.path.exists(utility_path):
+            print(f"Missing utility file: {utility_path}")
 
-# Function to build and test the package
-def build_and_test():
-    print("Building the package...")
-    subprocess.run(["swift", "build"], check=True)
-    print("Running tests...")
-    subprocess.run(["swift", "test"], check=True)
-
-# Main function to orchestrate the fixes
 def main():
-    create_dir(RESOURCES_DIR)
-    create_dir(VIEWS_DIR)
+    print("Fixing project structure...")
+    ensure_directories()
     move_resources()
-    update_package_swift()
-    setup_utilities()
-    clean_build()
-    build_and_test()
+    clean_backups()
+    verify_test_utilities()
+    print("Project structure fixed. Run `swift build` to compile.")
 
 if __name__ == "__main__":
     main()
-
