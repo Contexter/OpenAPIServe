@@ -4,8 +4,9 @@ import XCTVapor
 // MockDataProvider conforming to DataProvider protocol
 struct MockDataProvider: DataProvider {
     let mockContent: String
-    func fetchData() -> EventLoopFuture<String> {
-        return EmbeddedEventLoop().makeSucceededFuture(mockContent)
+    
+    func getData() -> String {
+        return mockContent
     }
 }
 
